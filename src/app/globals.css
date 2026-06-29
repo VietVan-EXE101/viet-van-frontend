@@ -1,26 +1,166 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* ══════════════════════════════════════════════════════════════
+   THEME TOKENS — Tailwind v4 @theme
+   Nguồn chân lý: theme.config.ts + cinematic.config.ts
+   ══════════════════════════════════════════════════════════════ */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* ── Font families ── */
+  --font-heading: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  --font-body:    var(--font-be-vietnam), "Be Vietnam Pro", system-ui, sans-serif;
+
+  /* ── Stage palette ── */
+  --color-stage:          #0B0908;   /* đen sân khấu */
+  --color-paper:          #EDE4D3;   /* kem giấy dó  */
+  --color-vermillion:     #9B2A2A;   /* son đỏ       */
+  --color-gold:           #C9A24C;   /* vàng đồng    */
+  --color-ink:            #3A2E27;   /* nâu mực tàu  */
+  --color-ink-light:      #5C4E44;   /* mực nhạt     */
+
+  /* ── Water palette (from intro.config) ── */
+  --color-water-deep:     #0a1f2e;
+  --color-water-mid:      #134e5e;
+  --color-water-surface:  #1a6b7a;
+  --color-water-glow:     rgba(26, 107, 122, 0.35);
+
+  /* ── Atmosphere (map từ theme.config.ts ATMOSPHERE_CSS_VARS) ── */
+  --atmosphere-darkness:  0.88;
+  --atmosphere-glow:      0.35;
+  --spotlight-softness:   0.65;
+  --stage-contrast:       1.25;
+  --ambient-opacity:      0.16;
+
+  /* ── Layout ── */
+  --section-gap:          5rem;
+  --nav-height:           4rem;
+
+  /* ── Radius ── */
+  --radius-card:          0.125rem; /* cạnh sắc, phong cách tranh sơn mài */
+  --radius-btn:           0.25rem;
+
+  /* ── Easing (CSS counterpart của EASING tokens) ── */
+  --ease-cinematic:       cubic-bezier(0.25, 0.1, 0.1, 1);
+  --ease-float:           cubic-bezier(0.45, 0.05, 0.55, 0.95);
+  --ease-dramatic:        cubic-bezier(0.7, 0, 0.3, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ══════════════════════════════════════════════════════════════
+   RUNTIME CSS CUSTOM PROPERTIES (giá trị thay đổi qua JS)
+   ══════════════════════════════════════════════════════════════ */
+:root {
+  --reveal:        0%;      /* WaterLogoIntro mask */
+  --spotlight-x:   50%;     /* Hero spotlight vị trí ngang */
+  --spotlight-y:   30%;     /* Hero spotlight vị trí dọc */
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BASE LAYER
+   ══════════════════════════════════════════════════════════════ */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-stage);
+    color: var(--color-paper);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    line-height: 1.15;
+    letter-spacing: 0.02em;
+  }
+
+  /* Scrollbar tối, phong cách sân khấu */
+  ::-webkit-scrollbar       { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--color-stage); }
+  ::-webkit-scrollbar-thumb { background: var(--color-ink); border-radius: 2px; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   KEYFRAMES — CSS animations
+   (GSAP quản lý interactive; CSS xử lý ambient/background)
+   ══════════════════════════════════════════════════════════════ */
+
+/* Ripple mặt nước — Hero background */
+@keyframes ripple-expand {
+  from { transform: scale(0.6); opacity: 0.45; }
+  to   { transform: scale(2.5); opacity: 0; }
+}
+
+/* Spotlight quét chậm — Hero ambient */
+@keyframes spotlight-sweep {
+  0%   { transform: translateX(-15%) skewX(-3deg); opacity: 0.28; }
+  50%  { opacity: 0.48; }
+  100% { transform: translateX(15%) skewX(3deg); opacity: 0.28; }
+}
+
+/* Thở chậm — ambient layer */
+@keyframes ambient-breathe {
+  0%, 100% { opacity: var(--ambient-opacity); }
+  50%       { opacity: calc(var(--ambient-opacity) * 1.7); }
+}
+
+/* Dây lụa nhẹ (fallback nếu GSAP chưa load) */
+@keyframes string-sway {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(4px); }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   UTILITY CLASSES (dùng nhiều hơn 1 chỗ)
+   ══════════════════════════════════════════════════════════════ */
+@layer utilities {
+  .font-heading  { font-family: var(--font-heading); }
+  .font-body     { font-family: var(--font-body); }
+
+  .text-gold     { color: var(--color-gold); }
+  .text-vermillion { color: var(--color-vermillion); }
+  .text-paper    { color: var(--color-paper); }
+
+  .bg-stage      { background-color: var(--color-stage); }
+  .bg-ink        { background-color: var(--color-ink); }
+
+  /* Section spacing chuẩn hoá */
+  .section-pad   { padding-block: var(--section-gap); }
+
+  /* Gold divider — dòng trang trí mỏng */
+  .gold-line {
+    width: 3rem;
+    height: 1px;
+    background-color: var(--color-gold);
+    opacity: 0.6;
+  }
+
+  /* Ambient spotlight radial */
+  .spotlight-radial {
+    background: radial-gradient(
+      ellipse 60% 40% at var(--spotlight-x) var(--spotlight-y),
+      rgba(201, 162, 76, 0.08) 0%,
+      transparent 70%
+    );
+    pointer-events: none;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ══════════════════════════════════════════════════════════════
+   REDUCED MOTION — override toàn bộ CSS animation
+   (GSAP respect thông qua useReducedMotion hook)
+   ══════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
