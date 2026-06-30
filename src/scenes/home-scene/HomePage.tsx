@@ -1,44 +1,121 @@
+/**
+ * src/scenes/home-scene/HomePage.tsx
+ *
+ * Orchestrator chính — quản lý:
+ * 1. Trạng thái intro (đã xem chưa, qua sessionStorage)
+ * 2. Fade-in mượt của nội dung sau khi intro kết thúc
+ * 3. Tập hợp tất cả sections + Navbar + Footer
+ */
 "use client";
-import { useState, useEffect } from "react";
-import { WaterLogoIntro } from "../intro-scene/WaterLogoIntro";
-import { INTRO_STORAGE_KEY } from "../intro-scene/intro.config";
+
+import { useState, useEffect, useRef } from "react";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+
+import { WaterLogoIntro } from "@/scenes/intro-scene/WaterLogoIntro";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
+import { HeroSection } from "./sections/HeroSection";
+import { StageSection } from "./sections/StageSection";
+import { CinematicModeSection } from "./sections/CinematicModeSection";
+import { LanguageModeSection } from "./sections/LanguageModeSection";
+import { JoinSection } from "./sections/JoinSection";
+import { INTRO_STORAGE_KEY } from "@/scenes/intro-scene/intro.config";
+
+gsap.registerPlugin(useGSAP);
+
+// ── Trạng thái ────────────────────────────────────────────────────────────────
+type PageState = "loading" | "intro" | "home";
 
 export function HomePage() {
-  const [showIntro, setShowIntro] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [pageState, setPageState] = useState<PageState>("loading");
+  const mainRef = useRef<HTMLDivElement>(null);
 
+  // Kiểm tra sessionStorage sau khi hydration (tránh SSR mismatch)
   useEffect(() => {
-    // Đẩy việc đặt trạng thái sang hàng đợi macro-task để tránh Cascading Render đồng bộ
     const timer = setTimeout(() => {
       const seen = sessionStorage.getItem(INTRO_STORAGE_KEY);
-      setShowIntro(!seen);
-      setMounted(true);
+      setPageState(seen ? "home" : "intro");
     }, 0);
-
-    // Dọn dẹp timer nếu component bị unmount bất ngờ
     return () => clearTimeout(timer);
   }, []);
 
-  if (!mounted) {
-    // Tránh hiện tượng nháy giao diện (flash) trước khi khớp Hydration giữa Client và Server
+  // Fade-in nội dung khi chuyển sang "home"
+  useGSAP(
+    () => {
+      if (pageState === "home" && mainRef.current) {
+        gsap.fromTo(
+          mainRef.current,
+          { opacity: 0 },
+          {
+            opacity: 1,
+            duration: 0.9,
+            ease: "power2.inOut",
+            delay: 0.1,
+          }
+        );
+      }
+    },
+    { dependencies: [pageState] }
+  );
+
+  const handleIntroComplete = () => {
+    setPageState("home");
+  };
+
+  // ── Loading state (hydration chưa xong) ──────────────────────────────────
+  if (pageState === "loading") {
     return (
-      <div className="min-h-screen" style={{ background: "#030810" }} />
+      <div
+        className="fixed inset-0"
+        aria-hidden
+      />
     );
   }
 
   return (
     <>
-      {showIntro && (
-        <WaterLogoIntro onComplete={() => setShowIntro(false)} />
+      {/* Intro overlay (fixed, z-50 — che toàn màn hình) */}
+      {pageState === "intro" && (
+        <WaterLogoIntro onComplete={handleIntroComplete} />
       )}
-      <main className="relative min-h-screen flex flex-col items-center justify-center bg-[#030810] text-zinc-100 px-6">
-        <h1 className="text-2xl sm:text-3xl font-light tracking-widest text-center opacity-80">
-          Sân khấu kịch số
-        </h1>
-        <p className="mt-4 text-sm sm:text-base text-zinc-500 text-center max-w-md leading-relaxed">
-          Nền tảng kể chuyện AI — lấy cảm hứng từ rối nước, văn học và truyện dân gian Việt Nam.
-        </p>
-      </main>
+
+      {/* Nội dung chính (render ngay, opacity 0 khi intro đang chạy) */}
+      <div
+        ref={mainRef}
+        style={{
+          opacity: pageState === "intro" ? 0 : 1,
+          minHeight: "100vh",
+        }}
+      >
+        <Navbar />
+
+        <main>
+          <HeroSection />
+
+          {/*
+           * 💡 HƯỚNG DẪN THAY ẢNH:
+           *
+           * StageSection — ảnh anime Vietnamese alley (B&W/desaturated), tỷ lệ 16:7
+           *   import stageImg from "@/assets/images/stage-alley.jpg";
+           *   <StageSection imageSrc={stageImg.src} />
+           *
+           * CinematicModeSection — ảnh anime room interior (green tones), tỷ lệ 1:1
+           *   import cinematicImg from "@/assets/images/cinematic-room.jpg";
+           *   <CinematicModeSection imageSrc={cinematicImg.src} />
+           *
+           * LanguageModeSection — ảnh top-down stage view (yellow-green), tỷ lệ 1:1
+           *   import languageImg from "@/assets/images/language-stage.jpg";
+           *   <LanguageModeSection imageSrc={languageImg.src} />
+           */}
+          <StageSection />
+          <CinematicModeSection />
+          <LanguageModeSection />
+          <JoinSection />
+        </main>
+
+        <Footer />
+      </div>
     </>
   );
 }

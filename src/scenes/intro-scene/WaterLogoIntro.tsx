@@ -17,8 +17,6 @@ import {
 } from "./intro.config";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
-// 💡 IMPORT FILE CHỮ VIỆT VĂN TỪ THƯ MỤC ASSETS (Webpack sẽ tự xử lý băm hash an toàn)
-import vietVanText from "@/assets/logos/vietvan.png";
 
 import { Geologica } from 'next/font/google';
 

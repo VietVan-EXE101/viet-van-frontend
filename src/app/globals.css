@@ -9,13 +9,13 @@
   --font-heading: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
   --font-body:    var(--font-be-vietnam), "Be Vietnam Pro", system-ui, sans-serif;
 
-  /* ── Stage palette ── */
-  --color-stage:          #0B0908;   /* đen sân khấu */
-  --color-paper:          #EDE4D3;   /* kem giấy dó  */
-  --color-vermillion:     #9B2A2A;   /* son đỏ       */
-  --color-gold:           #C9A24C;   /* vàng đồng    */
-  --color-ink:            #3A2E27;   /* nâu mực tàu  */
-  --color-ink-light:      #5C4E44;   /* mực nhạt     */
+  /* ── Stage palette — ĐÃ SỬA THÀNH ĐEN TUYỀN THEO FIGMA ── */
+  --color-stage:          #000000;   /* Đen tuyền tuyệt đối */
+  --color-paper:          #EDE4D3;   /* Kem giấy dó  */
+  --color-vermillion:     #9B2A2A;   /* Son đỏ       */
+  --color-gold:           #C9A24C;   /* Vàng đồng    */
+  --color-ink:            #3A2E27;   /* Nâu mực tàu  */
+  --color-ink-light:      #5C4E44;   /* Mực nhạt     */
 
   /* ── Water palette (from intro.config) ── */
   --color-water-deep:     #0a1f2e;
@@ -64,14 +64,15 @@
   html {
     scroll-behavior: smooth;
     color-scheme: dark;
+    background-color: var(--color-stage); /* Ép nền tối từ tầng html */
   }
 
   body {
-    background-color: var(--color-stage);
+    background-color: var(--color-stage) !important;
     color: var(--color-paper);
     font-family: var(--font-body);
-    font-size: 1rem;
-    line-height: 1.7;
+    margin: 0;
+    padding: 0;
   }
 
   h1, h2, h3, h4, h5, h6 {

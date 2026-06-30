@@ -21,7 +21,6 @@ export const INTRO_TIMING = {
  } as const;
  
  export const INTRO_ATMOSPHERE = {
-   stageBg: "#030810",
    waterDeep: "#0a1f2e",
    waterMid: "#134e5e",
    waterSurface: "#1a6b7a",
