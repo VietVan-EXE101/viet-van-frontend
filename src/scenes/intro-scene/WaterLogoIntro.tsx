@@ -25,7 +25,7 @@ const END_FRAME = 1547;
 
 const INTRO_FRAMES = Array.from(
   { length: END_FRAME - START_FRAME + 1 },
-  (_, i) => `/intro-frames/IMG_${START_FRAME + i}.png`
+  (_, i) => `/intro-frames/IMG_${START_FRAME + i}.PNG`
 );
 
 gsap.registerPlugin(useGSAP);
