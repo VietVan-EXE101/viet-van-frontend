@@ -1,0 +1,195 @@
+{
+  "work": {
+    "id": "chi_pheo",
+    "title": "Chí Phèo",
+    "author": "Nam Cao",
+    "language": "vi",
+    "version": "1.0"
+  },
+  "scenes": [
+    {
+      "id": "scene01",
+      "title": "BÁT CHÁO HÀNH",
+      "background": "Túp lều nhỏ của Chí Phèo bên bờ sông.",
+      "events": [
+        {
+          "event_id": "scene01_morning_birds",
+          "event_type": "AmbientSound",
+          "description": "Tiếng chim hót buổi sớm."
+        },
+        {
+          "event_id": "scene01_morning_wind",
+          "event_type": "AmbientSound",
+          "description": "Tiếng gió nhẹ thổi qua những tàu lá chuối."
+        },
+        {
+          "event_id": "scene01_stage_light_open",
+          "event_type": "Effect",
+          "description": "Ánh sáng vàng ấm dần phủ lên sân khấu."
+        },
+        {
+          "event_id": "scene01_chipheo_sleeping",
+          "event_type": "Effect",
+          "description": "Chí Phèo nằm trên chõng tre, gương mặt mệt mỏi sau cơn sốt."
+        },
+        {
+          "event_id": "scene01_intro_narration",
+          "event_type": "CharacterDialogue",
+          "character": "Người dẫn chuyện",
+          "emotion": "narration",
+          "dialogue": "Lần đầu tiên sau bao năm chìm trong men rượu,\nChí Phèo thức dậy trong sự tỉnh táo.\nVà cũng là lần đầu tiên,\nHắn cảm nhận được sự cô độc của chính mình.",
+          "audio_file": "chi_pheo/scene01/scene01_intro_narration.wav"
+        },
+        {
+          "event_id": "scene01_chipheo_first_monologue",
+          "event_type": "CharacterDialogue",
+          "character": "Chí Phèo",
+          "emotion": "sad",
+          "action": "ngồi dậy chậm rãi",
+          "dialogue": "Mình... già rồi sao?\nSau này...\nAi sẽ chăm sóc mình khi đau ốm?",
+          "audio_file": "chi_pheo/scene01/scene01_chipheo_first_monologue.wav"
+        },
+        {
+          "event_id": "scene01_thino_enter",
+          "event_type": "CharacterAppear",
+          "character": "Thị Nở",
+          "description": "Trên tay thị là một bát cháo hành còn nghi ngút khói."
+        },
+        {
+          "event_id": "scene01_thino_greeting",
+          "event_type": "CharacterDialogue",
+          "character": "Thị Nở",
+          "emotion": "gentle",
+          "dialogue": "Anh dậy rồi à?\nTôi nấu ít cháo hành đây.\nĂn cho khỏe người.",
+          "audio_file": "chi_pheo/scene01/scene01_thino_greeting.wav"
+        },
+        {
+          "event_id": "scene01_chipheo_surprised",
+          "event_type": "CharacterDialogue",
+          "character": "Chí Phèo",
+          "emotion": "surprised",
+          "action": "ngạc nhiên",
+          "dialogue": "Cho... tôi?",
+          "audio_file": "chi_pheo/scene01/scene01_chipheo_surprised.wav"
+        },
+        {
+          "event_id": "scene01_thino_reply",
+          "event_type": "CharacterDialogue",
+          "character": "Thị Nở",
+          "emotion": "gentle",
+          "action": "cười mộc mạc",
+          "dialogue": "Không cho anh thì cho ai?",
+          "audio_file": "chi_pheo/scene01/scene01_thino_reply.wav"
+        },
+        {
+          "event_id": "scene01_porridge_steam",
+          "event_type": "Effect",
+          "description": "Khói từ bát cháo hiện lên thành những dải sáng mềm mại."
+        },
+        {
+          "event_id": "scene01_porridge_aroma",
+          "event_type": "Effect",
+          "description": "Mùi hương hành được mô phỏng bằng hiệu ứng hình ảnh lan tỏa trên màn hình."
+        },
+        {
+          "event_id": "scene01_middle_narration",
+          "event_type": "CharacterDialogue",
+          "character": "Người dẫn chuyện",
+          "emotion": "narration",
+          "dialogue": "Suốt cuộc đời mình,\nChí Phèo chỉ biết cướp giật,\nđe dọa,\nvà làm cho người khác sợ hãi.\n\nNhưng hôm nay,\nlần đầu tiên,\ncó một người tự nguyện mang đến cho hắn sự quan tâm.",
+          "audio_file": "chi_pheo/scene01/scene01_middle_narration.wav"
+        },
+        {
+          "event_id": "scene01_chipheo_gratitude",
+          "event_type": "CharacterDialogue",
+          "character": "Chí Phèo",
+          "emotion": "emotional",
+          "action": "run rẩy nhận bát cháo",
+          "dialogue": "Sao lại tốt với tôi thế?",
+          "audio_file": "chi_pheo/scene01/scene01_chipheo_gratitude.wav"
+        },
+        {
+          "event_id": "scene01_thino_care",
+          "event_type": "CharacterDialogue",
+          "character": "Thị Nở",
+          "emotion": "gentle",
+          "dialogue": "Ốm đau thì phải ăn.\nCó thế thôi.",
+          "audio_file": "chi_pheo/scene01/scene01_thino_care.wav"
+        },
+        {
+          "event_id": "scene01_chipheo_take_porridge",
+          "event_type": "CharacterAction",
+          "character": "Chí Phèo",
+          "description": "Ăn một thìa cháo."
+        },
+        {
+          "event_id": "scene01_chipheo_touched",
+          "event_type": "CharacterDialogue",
+          "character": "Chí Phèo",
+          "emotion": "crying",
+          "action": "nghẹn ngào",
+          "dialogue": "Ngon...\nNgon quá...",
+          "audio_file": "chi_pheo/scene01/scene01_chipheo_touched.wav"
+        },
+        {
+          "event_id": "scene01_humanity_narration",
+          "event_type": "CharacterDialogue",
+          "character": "Người dẫn chuyện",
+          "emotion": "narration",
+          "dialogue": "Không phải cháo ngon.\nMà bởi trong bát cháo ấy,\ncó thứ mà Chí Phèo chưa từng được nhận.\n\nĐó là tình người.",
+          "audio_file": "chi_pheo/scene01/scene01_humanity_narration.wav"
+        },
+        {
+          "event_id": "scene01_flashback_effect",
+          "event_type": "Effect",
+          "description": "Phía sau sân khấu xuất hiện hình ảnh Chí Phèo thời trẻ:\nmột anh canh điền hiền lành, chăm chỉ."
+        },
+        {
+          "event_id": "scene01_chipheo_hope",
+          "event_type": "CharacterDialogue",
+          "character": "Chí Phèo",
+          "emotion": "hopeful",
+          "action": "rưng rưng",
+          "dialogue": "Hay là...\nMình cũng có thể sống như một con người lương thiện?",
+          "audio_file": "chi_pheo/scene01/scene01_chipheo_hope.wav"
+        },
+        {
+          "event_id": "scene01_thino_smile",
+          "event_type": "CharacterDialogue",
+          "character": "Thị Nở",
+          "emotion": "gentle",
+          "action": "mỉm cười",
+          "dialogue": "Ai chẳng muốn sống cho tử tế.",
+          "audio_file": "chi_pheo/scene01/scene01_thino_smile.wav"
+        },
+        {
+          "event_id": "scene01_music_rise",
+          "event_type": "Music",
+          "description": "Âm nhạc dâng lên."
+        },
+        {
+          "event_id": "scene01_chipheo_dream",
+          "event_type": "CharacterDialogue",
+          "character": "Chí Phèo",
+          "emotion": "hopeful",
+          "action": "nhìn Thị Nở",
+          "dialogue": "Giá như...\nGiá như chúng mình thành một đôi...",
+          "audio_file": "chi_pheo/scene01/scene01_chipheo_dream.wav"
+        },
+        {
+          "event_id": "scene01_spotlight_porridge",
+          "event_type": "Effect",
+          "description": "Ánh sáng tập trung vào bát cháo hành."
+        },
+        {
+          "event_id": "scene01_final_narration",
+          "event_type": "CharacterDialogue",
+          "character": "Người dẫn chuyện",
+          "emotion": "narration",
+          "dialogue": "Bát cháo hành nhỏ bé ấy\nđã đánh thức phần người tưởng như đã chết trong Chí Phèo.\n\nNhưng cũng từ đây,\nmột bi kịch mới bắt đầu...",
+          "audio_file": "chi_pheo/scene01/scene01_final_narration.wav"
+        }
+      ]
+    }
+  ]
+}

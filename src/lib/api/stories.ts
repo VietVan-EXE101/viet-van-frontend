@@ -1,45 +1,45 @@
 // src/lib/api/stories.ts
-// ══════════════════════════════════════════════════════════════
-// STORIES API
-// [API_SLOT] Base URL: GET /api/v1/stories
-// Backend owner: cần implement endpoint trả về danh sách truyện
-// ══════════════════════════════════════════════════════════════
 
+import { api } from "./client";
 import { API } from "./endpoints";
-import type { ApiResult, StoryGenre, DifficultyLevel } from "./types";
+import type {
+  ApiResult,
+  StoryGenre,
+  DifficultyLevel,
+} from "./types";
 
-
-// ── Interfaces ─────────────────────────────────────────────────
+// ── Interfaces ────────────────────────────────────────────────
 
 export interface Story {
   id: string;
   slug: string;
-  title: string;                  // "Tấm Cám"
-  shortDescription: string;       // 1-2 câu tóm tắt
-  genre: StoryGenre;
-  difficulty: DifficultyLevel;
-  readingTimeMinutes: number;
+  title: string;
 
-  // [DESIGNER_SLOT] coverUrl — Designer cung cấp artwork phong cách Đông Hồ/sơn mài
-  // Kích thước chuẩn: 400 × 560px (tỉ lệ poster dọc 5:7), định dạng WebP
-  coverUrl: string | null;
-
-  // [API_SLOT] audioPreviewUrl — Backend trả về URL presigned S3/CDN
-  audioPreviewUrl: string | null;
-
-  tags: string[];
-  publishedAt: string; // ISO 8601
-  isPublished: boolean;
+  // Backend chưa chắc đã trả toàn bộ các trường này,
+  // nên để optional trong giai đoạn tích hợp MVP.
+  author?: string;
+  shortDescription?: string;
+  genre?: StoryGenre;
+  difficulty?: DifficultyLevel;
+  readingTimeMinutes?: number;
+  coverUrl?: string | null;
+  audioPreviewUrl?: string | null;
+  tags?: string[];
+  publishedAt?: string;
+  isPublished?: boolean;
 }
 
-export interface FeaturedStoriesResponse {
+export interface StoriesResponse {
   stories: Story[];
 }
 
 export interface StoryDetailResponse {
   story: Story & {
-    content: StoryChapter[];
-    relatedStories: Pick<Story, "id" | "slug" | "title" | "coverUrl">[];
+    content?: StoryChapter[];
+    relatedStories?: Pick<
+      Story,
+      "id" | "slug" | "title" | "coverUrl"
+    >[];
   };
 }
 
@@ -47,10 +47,10 @@ export interface StoryChapter {
   id: string;
   order: number;
   title: string;
-  body: string; // HTML hoặc Markdown — Backend quyết định format
+  body: string;
 }
 
-// ── Query params ───────────────────────────────────────────────
+// ── Query params ──────────────────────────────────────────────
 
 export interface StoriesQueryParams {
   genre?: StoryGenre;
@@ -60,64 +60,87 @@ export interface StoriesQueryParams {
   page?: number;
 }
 
+function buildQueryString(params: StoriesQueryParams): string {
+  const query = new URLSearchParams();
 
-/**
- * Lấy danh sách truyện nổi bật cho Hero / FeaturedStories section
- * [API_SLOT] GET /api/v1/stories?featured=true&limit=4
- */
-export async function getFeaturedStories(
-  params: StoriesQueryParams = { featured: true, limit: 4 }
-): Promise<ApiResult<FeaturedStoriesResponse>> {
-
-  // ✅ Sửa fetch trong getFeaturedStories thành
-// Build query string từ params object
-const query = new URLSearchParams(
-    Object.entries(params)
-      .filter(([, v]) => v !== undefined)
-      .map(([k, v]) => [k, String(v)])
-  ).toString();
-
-  const url = params.featured
-    ? API.stories.featured
-    : `${API.stories.list}?${query}`;
-
-  const res = await fetch(url, {
-    next: { revalidate: 3600 },
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined) {
+      query.set(key, String(value));
+    }
   });
 
-  if (!res.ok) {
-    return {
-      error: {
-        code: "STORIES_FETCH_FAILED",
-        message: "Không thể tải danh sách truyện",
-        statusCode: res.status,
-      },
-    };
-  }
-
-  return res.json();
+  return query.toString();
 }
 
 /**
- * Lấy chi tiết 1 truyện theo slug
- * [API_SLOT] GET /api/v1/stories/:slug
+ * GET /api/v1/stories
  */
-export async function getStoryBySlug(
-  slug: string
-): Promise<ApiResult<StoryDetailResponse>> {
-  const res = await fetch(API.stories.detail(slug), {
-    next: { revalidate: 3600 },
-  });
+export async function getStories(
+  params: StoriesQueryParams = {},
+): Promise<ApiResult<StoriesResponse>> {
+  const query = buildQueryString(params);
 
-  if (!res.ok) {
+  const path = query
+    ? `${API.stories.list}?${query}`
+    : API.stories.list;
+
+  try {
+    return await api.get<ApiResult<StoriesResponse>>(path);
+  } catch (error) {
+    console.error("getStories failed:", error);
+
     return {
       error: {
-        code: "STORY_NOT_FOUND",
-        message: `Không tìm thấy truyện: ${slug}`,
-        statusCode: res.status,
+        code: "STORIES_FETCH_FAILED",
+        message: "Không thể tải danh sách tác phẩm",
+        statusCode: 500,
+      },
+    };
+  }
+}
+
+/**
+ * GET /api/v1/stories?featured=true&limit=4
+ */
+export async function getFeaturedStories(
+  params: StoriesQueryParams = {},
+): Promise<ApiResult<StoriesResponse>> {
+  return getStories({
+    ...params,
+    featured: true,
+    limit: params.limit ?? 4,
+  });
+}
+
+/**
+ * GET /api/v1/stories/:slug
+ */
+export async function getStoryBySlug(
+  slug: string,
+): Promise<ApiResult<StoryDetailResponse>> {
+  if (!slug.trim()) {
+    return {
+      error: {
+        code: "INVALID_STORY_SLUG",
+        message: "Slug tác phẩm không hợp lệ",
+        statusCode: 400,
       },
     };
   }
 
-  return res.json();
+  try {
+    return await api.get<ApiResult<StoryDetailResponse>>(
+      API.stories.detail(slug),
+    );
+  } catch (error) {
+    console.error(`getStoryBySlug failed: ${slug}`, error);
+
+    return {
+      error: {
+        code: "STORY_NOT_FOUND",
+        message: `Không thể tải tác phẩm: ${slug}`,
+        statusCode: 500,
+      },
+    };
+  }
 }

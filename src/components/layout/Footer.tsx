@@ -77,7 +77,6 @@ export function Footer() {
               height={24} 
               className="object-contain opacity-90 brightness-110" 
             />
-            <span className="text-white text-sm font-medium tracking-widest">VIỆT VĂN</span>
           </Link>
 
           {/* Menu Links điều hướng */}
@@ -86,7 +85,7 @@ export function Footer() {
               <Link
                 key={link}
                 href={`#${link.toLowerCase().replace(/\s/g, "-")}`}
-                className="text-xs text-white/60 hover:text-white transition-colors duration-200 tracking-wide font-light"
+                className="text-xs text-white hover:text-white transition-colors duration-200 tracking-wide font-light"
               >
                 {link}
               </Link>

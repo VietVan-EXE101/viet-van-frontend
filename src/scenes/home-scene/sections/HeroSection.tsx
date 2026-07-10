@@ -9,9 +9,17 @@
 import Link from "next/link";
 
 export function HeroSection() {
+    // 🛠️ Thêm hàm xử lý cuộn mượt đồng bộ với Navbar vào đây
+    const handleScrollToExplore = (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault();
+      const element = document.getElementById("explore");
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+        window.history.pushState(null, "", "/home");
+      }
+    };
     return (
       <section 
-        id="about" /*THÊM ID "about" VÀO ĐÂY ĐỂ NAVBAR ĐỊNH VỊ ĐÚNG HEROSECTION */
         className="min-h-screen bg-black flex flex-col items-center justify-center text-center px-4 pt-20">
         {/* Khối bọc text: Đã loại bỏ hoàn toàn class tạo viền góc màu xanh */}
         <div className="max-w-4xl mx-auto flex flex-col items-center dynamic-text-block">
@@ -26,7 +34,7 @@ export function HeroSection() {
           </h1>
   
           {/* ĐOẠN MÔ TẢ PHỤ: Chuyển sang text-white/80 sáng rõ hơn */}
-          <p className="font-light text-sm md:text-[15px] text-white/100 max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className="font-light text-sm md:text-[15px] text-white max-w-2xl mx-auto mb-10 leading-relaxed">
             A digital theater built for those who understand the weight of a single moment. 
             Manage your craft with precision.
           </p>
@@ -39,12 +47,14 @@ export function HeroSection() {
             >
               Begin
             </Link>
-            <Link
-              href="/explore"
-              className="border border-white/80 text-white px-8 py-2.5 text-sm font-normal tracking-wide transition-colors duration-200 hover:border-white rounded-none bg-transparent"
+            {/* 🛠️ CHỈNH SỬA TẠI ĐÂY: Chuyển hoàn toàn Link thành thẻ <a> thuần */}
+            <a
+              href="#explore"
+              onClick={handleScrollToExplore}
+              className="border border-white/80 text-white px-8 py-2.5 text-sm font-normal tracking-wide transition-colors duration-200 hover:border-white rounded-none bg-transparent cursor-pointer"
             >
               Explore
-            </Link>
+            </a>
           </div>
   
         </div>

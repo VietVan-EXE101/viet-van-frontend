@@ -35,12 +35,12 @@ export function CinematicModeSection({ imageSrc }: CinematicModeSectionProps) {
   return (
     <section
       ref={sectionRef}
-      id="features"
+      id="explore"
       /* 🔥 ĐÃ SỬA THÊM: 
         - `scroll-mt-20`: Đẩy mốc dừng chân xuống 80px để không bị che dưới Navbar h-20.
         - `overflow-hidden`: Giữ khối "50vw" không bị tràn ra rìa phải màn hình làm lỗi tọa độ anchor link.
       */
-        className="w-full px-6 md:px-16 py-16 md:py-24 scroll-mt-0 overflow-hidden bg-black select-none"
+      className="min-h-screen bg-black flex items-center relative overflow-hidden py-20"
     >
       {/* ── BỌC TOÀN BỘ KHỐI NỘI DUNG TRONG motion.div THEO TIẾN TRÌNH CUỘN CHUỘT ── */}
       <motion.div style={{ x, opacity }} className="w-full">
@@ -113,8 +113,9 @@ export function CinematicModeSection({ imageSrc }: CinematicModeSectionProps) {
             </p>
 
             {/* NÚT PLAY */}
+            
             <Link
-              href="#"
+              href="/library"
               className="flex items-center gap-2 text-sm font-light w-fit transition-colors duration-200 mt-2 text-white hover:text-white"
             >
               <span>Play</span>

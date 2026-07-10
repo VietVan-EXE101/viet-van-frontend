@@ -40,6 +40,24 @@ export function HomePage() {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    // Chỉ kích hoạt cuộn khi trạng thái trang chủ đã tải xong toàn bộ DOM
+    if (pageState === "home") {
+      const hash = window.location.hash; // Lấy ra cái #explore từ URL
+      if (hash) {
+        // Dùng setTimeout 100ms để đảm bảo React và GSAP đã dựng xong các chiều cao của component
+        setTimeout(() => {
+          const id = hash.replace("#", "");
+          const element = document.getElementById(id);
+          if (element) {
+            element.scrollIntoView({ behavior: "smooth" });
+            window.history.pushState(null, "", "/home");
+          }
+        }, 100);
+      }
+    }
+  }, [pageState]);
+
   // Fade-in nội dung khi chuyển sang "home"
   useGSAP(
     () => {

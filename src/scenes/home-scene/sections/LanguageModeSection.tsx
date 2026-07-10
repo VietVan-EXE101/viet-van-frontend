@@ -88,10 +88,10 @@ export function LanguageModeSection({ imageSrc }: LanguageModeSectionProps) {
             <div className="flex items-center gap-4 mt-2">
               {/* Nút Explore */}
               <Link
-                href="#"
-                className="border border-white/80 
+                href="/learn"
+                className="h-12 inline-flex items-center justify-center border border-white/80 
                 text-white 
-                px-6 py-2.5 text-sm 
+                px-6 text-sm leading-none
                 font-light 
                 tracking-wide 
                 transition-colors 
@@ -103,8 +103,8 @@ export function LanguageModeSection({ imageSrc }: LanguageModeSectionProps) {
               
               {/* Nút Watch */}
               <Link
-                href="#"
-                className="flex items-center gap-2 text-sm font-light w-fit transition-colors duration-200 text-white hover:text-white"
+                href="/library"
+                className="h-12 inline-flex items-center gap-3 text-sm leading-none font-light w-fit transition-colors duration-200 text-white hover:text-white"
               >
                 <span>Watch</span>
                 <svg 
@@ -116,7 +116,7 @@ export function LanguageModeSection({ imageSrc }: LanguageModeSectionProps) {
                   strokeWidth="2.5" 
                   strokeLinecap="square" 
                   strokeLinejoin="miter"
-                  className="inline-block"
+                  className="inline-block shrink-0"
                 >
                   <path d="M9 5l7 7-7 7" />
                 </svg>

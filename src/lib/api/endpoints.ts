@@ -19,7 +19,9 @@
 // ──────────────────────────────────────────────────────────────
 export const STORIES_ENDPOINTS = {
   list: "/api/v1/stories",
-  detail: (slug: string) => `/api/v1/stories/${slug}`}
+  detail: (slug: string) =>
+    `/api/v1/stories/${encodeURIComponent(slug)}`,
+} as const;
 
 // ──────────────────────────────────────────────────────────────
 // 🎙️ SPEAKING
@@ -140,3 +142,34 @@ export const STORIES_ENDPOINTS = {
 //  auth:     AUTH_ENDPOINTS,
 //  user:     USER_ENDPOINTS,
 //} as const;
+
+// 📖 LEARN
+export const LEARN_ENDPOINTS = {
+  preview: "/api/v1/learn/preview",
+  flashcards: "/api/v1/learn/flashcards",
+  quizzes: "/api/v1/learn/quizzes",
+  annotations: "/api/v1/learn/annotations",
+} as const;
+
+// (Nếu chưa implement các module khác thì vẫn có thể để object rỗng)
+export const SPEAKING_ENDPOINTS = {
+  featuredExcerpt: "/api/v1/speaking/excerpts/featured",
+  excerptList: "/api/v1/speaking/excerpts",
+  submit: "/api/v1/speaking/submit",
+} as const;
+export const QUOTE_ENDPOINTS = {
+  daily: "/api/v1/quotes/daily",
+} as const;
+export const AUTH_ENDPOINTS = {} as const;
+export const USER_ENDPOINTS = {} as const;
+
+// MASTER MAP
+export const API = {
+  stories: STORIES_ENDPOINTS,
+  speaking: SPEAKING_ENDPOINTS,
+  learn: LEARN_ENDPOINTS,
+  quotes: QUOTE_ENDPOINTS,
+  auth: AUTH_ENDPOINTS,
+  user: USER_ENDPOINTS,
+} as const;
+

@@ -14,7 +14,7 @@ import picLogo from "@/assets/logos/pic_logo.png";
 const NAV_LINKS = [
   { label: "Explore", href: "/#explore" },
   { label: "Features", href: "/#features" },
-  { label: "About", href: "/#about" },
+  { label: "About", href: "/#join" },
 ] as const;
 
 export function Navbar() {
@@ -33,7 +33,7 @@ export function Navbar() {
         element.scrollIntoView({ behavior: "smooth" });
         
         // Cập nhật thanh URL mà không làm mất trạng thái cuộn
-        window.history.pushState(null, "", href);
+        window.history.pushState(null, "", "/home");
       }
     }
   };
@@ -45,17 +45,16 @@ export function Navbar() {
     >
       <div className="flex items-center gap-10">  
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 shrink-0">
+        <Link href="/home" className="flex items-center gap-2 shrink-0">
           <Image
             src={picLogo}
             alt="Việt Văn"
-            width={28}
-            height={28}
+            width={30}
+            height={30}
             className="object-contain"
           />
-          <span className="text-white text-sm font-medium tracking-wider uppercase">
-            Việt Văn
-          </span>
+          
+
         </Link>
 
         {/* Thanh Điều Hướng (Sử dụng thẻ <a> để sửa lỗi click lần 2) */}
@@ -65,7 +64,7 @@ export function Navbar() {
               key={item.label}
               href={item.href}
               onClick={(e) => handleScroll(e, item.href)}
-              className="text-white/60 hover:text-white text-sm font-normal tracking-wide transition-colors duration-200 cursor-pointer"
+              className="text-white hover:text-white text-sm font-light tracking-wide transition-colors duration-200 cursor-pointer"
             >
               {item.label}
             </a>
@@ -115,12 +114,13 @@ export function Navbar() {
         >
           Sign in
         </Link>
-        <Link
-          href="/join"
-          className="bg-white text-black px-5 py-2 text-sm tracking-wide font-medium transition-colors duration-200 hover:bg-white/90 rounded-none"
+        <a
+          href="#join"
+          onClick={(e) => handleScroll(e, "#join")}
+          className="bg-white text-black px-5 py-2 text-sm tracking-wide font-medium transition-colors duration-200 hover:bg-white/90 rounded-none cursor-pointer"
         >
           Join
-        </Link>
+        </a>
       </div>
     </header>
   );

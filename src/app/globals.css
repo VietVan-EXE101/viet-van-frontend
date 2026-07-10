@@ -8,6 +8,8 @@
   /* ── Font families ── */
   --font-heading: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
   --font-body:    var(--font-be-vietnam), "Be Vietnam Pro", system-ui, sans-serif;
+  /* 🌟 THÊM DÒNG NÀY ĐỂ ĐĂNG KÝ FONT GEOLOGICA CHO TAILWIND V4: */
+  --font-geologica: var(--font-geologica), system-ui, sans-serif;
 
   /* ── Stage palette — ĐÃ SỬA THÀNH ĐEN TUYỀN THEO FIGMA ── */
   --color-stage:          #000000;   /* Đen tuyền tuyệt đối */

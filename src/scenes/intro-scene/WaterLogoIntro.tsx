@@ -11,20 +11,11 @@ import { useGSAP } from "@gsap/react";
 import {
   INTRO_TIMING,
   INTRO_EASING,
-  INTRO_ATMOSPHERE,
   INTRO_STORAGE_KEY,
   INTRO_ROPE,
 } from "./intro.config";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
-
-import { Geologica } from 'next/font/google';
-
-// Khởi tạo font cấu hình riêng cho Tiếng Việt
-const geologicaFont = Geologica({
-  subsets: ['vietnamese'],
-  display: 'swap',
-});
 
 // ──────────────────────────────────────────────────────────────
 // 🛠️ CẤU HÌNH CHUỖI ẢNH TỰ ĐỘNG TỪ THƯ MỤC PUBLIC
@@ -263,7 +254,6 @@ export function WaterLogoIntro({ onComplete }: WaterLogoIntroProps) {
     <div
       ref={containerRef}
       className="fixed inset-0 z-50 flex items-center justify-center select-none overflow-hidden"
-      style={{ backgroundColor: INTRO_ATMOSPHERE.stageBg }}
       role="dialog"
       aria-label="Màn mở đầu sân khấu nước"
       aria-modal="true"
@@ -285,7 +275,7 @@ export function WaterLogoIntro({ onComplete }: WaterLogoIntroProps) {
         <div 
           ref={textRef} 
           // 💡 Thêm geologicaFont.className vào đầu chuỗi class
-          className={`${geologicaFont.className} w-[50vw] sm:w-[240px] md:w-[280px] pointer-events-none -mt-16 sm:-mt-28 md:-mt-25 mb-0 flex justify-center items-center text-white text-2xl sm:text-3xl tracking-[0.25em] font-medium select-none opacity-0`}
+          className={`font-geologica} w-[50vw] sm:w-[240px] md:w-[280px] pointer-events-none -mt-16 sm:-mt-28 md:-mt-25 mb-0 flex justify-center items-center text-white text-2xl sm:text-3xl tracking-[0.25em] font-medium select-none opacity-0`}
           style={{ filter: LOGO_TINT }}
         >
           {"VIỆT VĂN".split("").map((char, index) => {

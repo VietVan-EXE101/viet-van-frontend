@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Be_Vietnam_Pro } from "next/font/google";
+import { Cormorant_Garamond, Be_Vietnam_Pro, Geologica } from "next/font/google";
 import "./globals.css";
 
 // ── Heading font: editorial serif, hỗ trợ tiếng Việt ──
@@ -16,6 +16,14 @@ const beVietnam = Be_Vietnam_Pro({
   variable: "--font-be-vietnam",
   subsets: ["latin", "vietnamese"],
   weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+});
+
+// ── 🌟 Khởi tạo Font Geologica hợp lệ ở Server Component ──
+const geologica = Geologica({
+  variable: "--font-geologica",
+  subsets: ["latin", "vietnamese"],
+  weight: ["300", "400", "500", "700"],
   display: "swap",
 });
 
@@ -38,7 +46,7 @@ export default function RootLayout({
   return (
     <html
       lang="vi"
-      className={`${cormorant.variable} ${beVietnam.variable} h-full antialiased`}
+      className={`${cormorant.variable} ${beVietnam.variable} ${geologica.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-stage text-white">

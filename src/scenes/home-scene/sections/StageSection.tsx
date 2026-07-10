@@ -35,7 +35,7 @@ export function StageSection({
   return (
     <section
       ref={sectionRef}
-      id="explore"
+      id="features"
       // 💡 ĐÃ SỬA: Điều chỉnh scroll-mt-20 (bằng 80px) khớp khít với chiều cao h-20 của Navbar 
       // giúp khi click Explore, màn hình sẽ dừng lại ở vị trí hoàn hảo nhất không bị lệch dòng.
       className="relative w-full scroll-mt-38 overflow-hidden bg-black select-none"
