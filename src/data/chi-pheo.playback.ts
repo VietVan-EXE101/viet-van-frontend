@@ -42,9 +42,9 @@ export function getChiPheoPlayback(): PlaybackData {
         frameUrls:
           event.event_id === "scene01_thino_greeting"
             ? [
-                "/videos/chi-pheo/scene01/scene01_thino_greeting/scene01_thino_greeting_frame_01.PNG",
-                "/videos/chi-pheo/scene01/scene01_thino_greeting/scene01_thino_greeting_frame_02.PNG",
-                "/videos/chi-pheo/scene01/scene01_thino_greeting/scene01_thino_greeting_frame_03.PNG",
+                "/videos/chi-pheo/scene01/scene01_thino_greeting/scene01_thino_greeting_frame_01.png",
+                "/videos/chi-pheo/scene01/scene01_thino_greeting/scene01_thino_greeting_frame_02.png",
+                "/videos/chi-pheo/scene01/scene01_thino_greeting/scene01_thino_greeting_frame_03.png",
               ]
             : undefined,
       },
