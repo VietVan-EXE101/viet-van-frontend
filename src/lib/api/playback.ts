@@ -11,6 +11,7 @@ export interface PlaybackScene {
   action?: string;
   audioUrl: string;
   videoUrl?: string;
+  frameUrls?: string[];
 }
 
 export interface PlaybackData {

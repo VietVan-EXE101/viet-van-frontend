@@ -53,7 +53,8 @@ export function LibraryPage() {
   }, []);
 
   useEffect(() => {
-    loadStories();
+    const loadTask = Promise.resolve().then(() => loadStories());
+    void loadTask;
   }, [loadStories]);
 
   const filteredItems = useMemo(() => {
@@ -171,7 +172,7 @@ export function LibraryPage() {
                           alt={item.title}
                           fill
                           unoptimized
-                          className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:scale-105 transition-transform duration-700 ease-out"
+                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                         />
                       )}
 
@@ -179,7 +180,7 @@ export function LibraryPage() {
                         <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 to-zinc-950 opacity-60 group-hover:scale-105 transition-transform duration-700 ease-out" />
                       )}
 
-                      <div className="absolute top-4 left-4 text-[10px] tracking-widest text-white/20 font-mono">
+                      <div className="absolute top-4 left-4 text-[10px] tracking-widest text-white/70 font-mono">
                         NO.{String(idx + 1).padStart(2, "0")}
                       </div>
 

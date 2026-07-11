@@ -36,6 +36,16 @@ export function getChiPheoPlayback(): PlaybackData {
         videoUrl:
           event.event_id === "scene01_intro_narration"
             ? "/videos/chi-pheo/scene01/scene01_opening.mp4"
+            : event.event_id === "scene01_chipheo_first_monologue"
+              ? "/videos/chi-pheo/scene01/scene01_chipheo_first_monologue.webm"
+            : undefined,
+        frameUrls:
+          event.event_id === "scene01_thino_greeting"
+            ? [
+                "/videos/chi-pheo/scene01/scene01_thino_greeting/scene01_thino_greeting_frame_01.PNG",
+                "/videos/chi-pheo/scene01/scene01_thino_greeting/scene01_thino_greeting_frame_02.PNG",
+                "/videos/chi-pheo/scene01/scene01_thino_greeting/scene01_thino_greeting_frame_03.PNG",
+              ]
             : undefined,
       },
     ];

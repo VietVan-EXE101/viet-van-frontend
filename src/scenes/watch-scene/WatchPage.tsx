@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
@@ -93,6 +94,22 @@ export function WatchPage({ slug, mode }: WatchPageProps) {
   const canGoNext = mode === "full" && currentIndex < scenes.length - 1;
   const progress =
     duration > 0 ? Math.min((currentTime / duration) * 100, 100) : 0;
+  const currentFrameUrls = currentScene?.frameUrls ?? [];
+  const activeFrameIndex = useMemo(() => {
+    if (currentFrameUrls.length === 0) {
+      return 0;
+    }
+
+    if (!Number.isFinite(duration) || duration <= 0) {
+      return 0;
+    }
+
+    const frameDuration = duration / currentFrameUrls.length;
+    return Math.min(
+      currentFrameUrls.length - 1,
+      Math.floor(currentTime / frameDuration),
+    );
+  }, [currentFrameUrls.length, currentTime, duration]);
 
   const modeLabel = useMemo(() => {
     return isPreview ? "Preview" : "Full experience";
@@ -331,6 +348,24 @@ export function WatchPage({ slug, mode }: WatchPageProps) {
                     loop
                     className="absolute inset-0 h-full w-full bg-black object-contain"
                   />
+                ) : currentFrameUrls.length > 0 ? (
+                  <div className="absolute inset-0 bg-black">
+                    {currentFrameUrls.map((frameUrl, frameIndex) => (
+                      <Image
+                        key={frameUrl}
+                        src={frameUrl}
+                        alt=""
+                        fill
+                        unoptimized
+                        priority={frameIndex === 0}
+                        className={`object-contain transition-opacity duration-700 ease-out ${
+                          frameIndex === activeFrameIndex
+                            ? "opacity-100"
+                            : "opacity-0"
+                        }`}
+                      />
+                    ))}
+                  </div>
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-white/[0.08] to-transparent px-6 text-center">
                     <p className="font-mono text-xs uppercase tracking-[0.2em] text-white/35">

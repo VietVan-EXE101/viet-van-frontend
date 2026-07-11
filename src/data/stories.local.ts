@@ -6,7 +6,7 @@ const LOCAL_STORIES: Story[] = [
     slug: "chi-pheo",
     title: "Chí Phèo",
     author: "Nam Cao",
-    coverUrl: null,
+    coverUrl: "/images/stories/chi-pheo-cover.webp",
   },
 ];
 
