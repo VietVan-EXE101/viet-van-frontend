@@ -1,62 +1,45 @@
 "use client";
-import {
-  useRef,
-  useState,
-  useCallback,
-  useEffect,
-  type PointerEvent as ReactPointerEvent,
-} from "react";
+
+import { useRef, useState, useCallback, useEffect } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import {
   INTRO_TIMING,
   INTRO_EASING,
   INTRO_STORAGE_KEY,
-  INTRO_ROPE,
 } from "./intro.config";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
-
-// ──────────────────────────────────────────────────────────────
-// 🛠️ CẤU HÌNH CHUỖI ẢNH TỰ ĐỘNG TỪ THƯ MỤC PUBLIC
-// ──────────────────────────────────────────────────────────────
-const START_FRAME = 1501; 
-const END_FRAME = 1547; 
+const START_FRAME = 1501;
+const END_FRAME = 1547;
 
 const INTRO_FRAMES = Array.from(
   { length: END_FRAME - START_FRAME + 1 },
-  (_, i) => `/intro-frames/IMG_${START_FRAME + i}.PNG`
+  (_, i) => `/intro-frames/IMG_${START_FRAME + i}.PNG`,
 );
 
 gsap.registerPlugin(useGSAP);
+
 type IntroPhase = "revealing" | "interactive" | "exiting";
 
 interface WaterLogoIntroProps {
   onComplete: () => void;
 }
 
-// Giữ màu vàng ngà sang trọng cổ kính cho toàn bộ chuỗi ảnh Rồng + Chữ
 const LOGO_TINT = "none";
 
 export function WaterLogoIntro({ onComplete }: WaterLogoIntroProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const animeImageRef = useRef<HTMLImageElement>(null); 
-  const textRef = useRef<HTMLDivElement>(null); // 💡 Ref quản lý chữ Việt Văn
-  const ropeGroupRef = useRef<HTMLDivElement>(null);
-  const ropeLineRef = useRef<SVGLineElement>(null);
-  const beadRef = useRef<HTMLDivElement>(null);
+  const animeImageRef = useRef<HTMLImageElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  const actionGroupRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const phaseRef = useRef<IntroPhase>("revealing");
-  
-  const isDraggingRef = useRef(false);
-  const dragStartYRef = useRef(0);
-  const dragStartOffsetRef = useRef(0);
-  const pullOffsetRef = useRef(0);
-  const [pullOffset, setPullOffset] = useState(0);
-  const [ropeVisible, setRopeVisible] = useState(false);
+
+  const [actionVisible, setActionVisible] = useState(false);
   const [phase, setPhase] = useState<IntroPhase>("revealing");
   const reducedMotion = useReducedMotion();
 
-  // Preload ảnh tĩnh
   useEffect(() => {
     INTRO_FRAMES.forEach((src) => {
       const img = new Image();
@@ -64,18 +47,13 @@ export function WaterLogoIntro({ onComplete }: WaterLogoIntroProps) {
     });
   }, []);
 
-  const syncPullOffset = useCallback((value: number) => {
-    const clamped = Math.max(0, value);
-    pullOffsetRef.current = clamped;
-    setPullOffset(clamped);
-  }, []);
-
   const finishIntro = useCallback(() => {
     if (phaseRef.current === "exiting") return;
     phaseRef.current = "exiting";
     setPhase("exiting");
 
-    gsap.killTweensOf(ropeGroupRef.current);
+    gsap.killTweensOf(actionGroupRef.current);
+    gsap.killTweensOf(buttonRef.current);
 
     const tl = gsap.timeline({
       onComplete: () => {
@@ -84,9 +62,9 @@ export function WaterLogoIntro({ onComplete }: WaterLogoIntroProps) {
       },
     });
 
-    tl.to(beadRef.current, {
-      y: pullOffsetRef.current + INTRO_ROPE.dropOffset,
-      duration: INTRO_ROPE.successTugDuration,
+    tl.to(buttonRef.current, {
+      scale: 0.96,
+      duration: 0.16,
       ease: INTRO_EASING.logoReveal.gsap,
     });
 
@@ -101,36 +79,22 @@ export function WaterLogoIntro({ onComplete }: WaterLogoIntroProps) {
     );
   }, [onComplete]);
 
-  const snapRopeBack = useCallback(() => {
-    gsap.to(pullOffsetRef, {
-      current: 0,
-      duration: 0.8,
-      ease: "elastic.out(1.2, 0.4)",
-      onUpdate: () => syncPullOffset(pullOffsetRef.current),
-    });
-  }, [syncPullOffset]);
-
-  /* ── Kịch bản hoạt họa lật hình bằng GSAP ── */
   useGSAP(
     () => {
       const imgEl = animeImageRef.current;
       if (!imgEl) return;
 
       imgEl.src = INTRO_FRAMES[0];
-      
-      // 🟢 Dùng Ref cho các phần tử cha độc lập
-      gsap.set(ropeGroupRef.current, { y: -25, opacity: 0 }); 
-      gsap.set(textRef.current, { opacity: 1, y: 0 }); // GSAP tự xử lý nếu textRef tạm thời null
-      
-      // 🌟 SỬA TẠI ĐÂY: Truyền thẳng chuỗi ".char". 
-      // GSAP tự tìm kiếm an toàn trong scope, không lo lỗi null của querySelectorAll nữa!
-      gsap.set(".char", { opacity: 0, y: 60 }); 
+
+      gsap.set(actionGroupRef.current, { y: 12, opacity: 0 });
+      gsap.set(textRef.current, { opacity: 1, y: 0 });
+      gsap.set(".char", { opacity: 0, y: 60 });
 
       if (reducedMotion) {
         imgEl.src = INTRO_FRAMES[INTRO_FRAMES.length - 1];
         gsap.set(".char", { opacity: 1, y: 0 });
-        gsap.set(ropeGroupRef.current, { y: 0, opacity: 1 });
-        setRopeVisible(true);
+        gsap.set(actionGroupRef.current, { y: 0, opacity: 1 });
+        setActionVisible(true);
         phaseRef.current = "interactive";
         setPhase("interactive");
         return;
@@ -143,34 +107,23 @@ export function WaterLogoIntro({ onComplete }: WaterLogoIntroProps) {
         onComplete: () => {
           phaseRef.current = "interactive";
           setPhase("interactive");
-          setRopeVisible(true);
+          setActionVisible(true);
 
-          const idleTimeline = gsap.timeline();
-          
-          idleTimeline.to(ropeGroupRef.current, {
+          gsap.to(actionGroupRef.current, {
             y: 0,
             opacity: 1,
             duration: INTRO_TIMING.logoSettle,
             ease: INTRO_EASING.logoReveal.gsap,
-          });
-
-          idleTimeline.to(ropeGroupRef.current, {
-            y: "+=4",
-            duration: 1.6,
-            ease: "sine.inOut",
-            repeat: -1,
-            yoyo: true,
           });
         },
       });
 
       revealTl.to({}, { duration: INTRO_TIMING.darknessHold });
 
-      // 1. Chạy chuyển động múa rồng frame-by-frame
       revealTl.to(animationState, {
         currentFrame: totalFrames,
         duration: INTRO_TIMING.logoReveal,
-        ease: `steps(${totalFrames})`, 
+        ease: `steps(${totalFrames})`,
         onUpdate: () => {
           const frameIndex = Math.round(animationState.currentFrame);
           if (INTRO_FRAMES[frameIndex]) {
@@ -179,9 +132,8 @@ export function WaterLogoIntro({ onComplete }: WaterLogoIntroProps) {
         },
       });
 
-      // 2. Kích hoạt hiệu ứng Ramp Down đưa các chữ về gốc
       revealTl.to(
-        ".char", // 🌟 SỬA TẠI ĐÂY: Thay thế textRef.current.querySelectorAll(".char") bằng chuỗi ".char"
+        ".char",
         {
           y: 0,
           opacity: 1,
@@ -189,66 +141,19 @@ export function WaterLogoIntro({ onComplete }: WaterLogoIntroProps) {
           ease: "power3.out",
           stagger: {
             each: 0.06,
-            from: "start"
-          }
+            from: "start",
+          },
         },
-        "-=0.2"
+        "-=0.2",
       );
     },
-    { scope: containerRef, dependencies: [] }
+    { scope: containerRef, dependencies: [] },
   );
 
-  const handlePointerDown = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (phaseRef.current !== "interactive") return;
-      isDraggingRef.current = true;
-      dragStartYRef.current = e.clientY;
-      dragStartOffsetRef.current = pullOffsetRef.current;
-      e.currentTarget.setPointerCapture(e.pointerId);
-      e.preventDefault();
-    },
-    [],
-  );
-
-  const handlePointerMove = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (!isDraggingRef.current) return;
-      const delta = e.clientY - dragStartYRef.current;
-      syncPullOffset(dragStartOffsetRef.current + delta);
-      e.preventDefault();
-    },
-    [syncPullOffset],
-  );
-
-  const handlePointerUp = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (!isDraggingRef.current) return;
-      isDraggingRef.current = false;
-      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-        e.currentTarget.releasePointerCapture(e.pointerId);
-      }
-      if (pullOffsetRef.current >= INTRO_ROPE.pullThreshold) {
-        finishIntro();
-      } else {
-        snapRopeBack();
-      }
-    },
-    [finishIntro, snapRopeBack],
-  );
-
-  const handlePointerCancel = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (!isDraggingRef.current) return;
-      isDraggingRef.current = false;
-      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-        e.currentTarget.releasePointerCapture(e.pointerId);
-      }
-      snapRopeBack();
-    },
-    [snapRopeBack],
-  );
-
-  const ropeLineLength = 45 + pullOffset; 
+  const handleActionClick = useCallback(() => {
+    if (phaseRef.current !== "interactive") return;
+    finishIntro();
+  }, [finishIntro]);
 
   return (
     <div
@@ -259,8 +164,6 @@ export function WaterLogoIntro({ onComplete }: WaterLogoIntroProps) {
       aria-modal="true"
     >
       <div className="flex flex-col items-center gap-0 w-full max-w-sm sm:max-w-md md:max-w-lg -translate-y-10 sm:-translate-y-16 md:-translate-y-20">
-        
-        {/* ── Khối chứa chuỗi ảnh Rồng 800x800px chuẩn hóa ── */}
         <div className="relative w-[70vw] sm:w-[400px] md:w-[480px] aspect-square flex items-center justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -271,95 +174,73 @@ export function WaterLogoIntro({ onComplete }: WaterLogoIntroProps) {
           />
         </div>
 
-        {/* ── KHỐI CHỨA CHỮ VIỆT VĂN (Chuẩn font text theo After Effects) ── */}
-        <div 
-          ref={textRef} 
-          // 💡 Thêm geologicaFont.className vào đầu chuỗi class
-          className={`font-geologica} w-[50vw] sm:w-[240px] md:w-[280px] pointer-events-none -mt-16 sm:-mt-28 md:-mt-25 mb-0 flex justify-center items-center text-white text-2xl sm:text-3xl tracking-[0.25em] font-medium select-none opacity-0`}
+        <div
+          ref={textRef}
+          className="font-geologica w-[50vw] sm:w-[240px] md:w-[280px] pointer-events-none -mt-16 sm:-mt-28 md:-mt-25 mb-0 flex justify-center items-center text-white text-2xl sm:text-3xl tracking-[0.25em] font-medium select-none opacity-0"
           style={{ filter: LOGO_TINT }}
         >
           {"VIỆT VĂN".split("").map((char, index) => {
-            if (char === " ") return <span key={index} className="w-[0.5em]" aria-hidden="true" />;
+            if (char === " ") {
+              return (
+                <span
+                  key={index}
+                  className="w-[0.5em]"
+                  aria-hidden="true"
+                />
+              );
+            }
+
             return (
-              <span key={index} className="char inline-block will-change-transform opacity-0">
+              <span
+                key={index}
+                className="char inline-block will-change-transform opacity-0"
+              >
                 {char}
               </span>
             );
           })}
         </div>
 
-        {/* ── Dây lụa đỏ bám cố định dưới chân Chữ ── */}
         <div
-          ref={ropeGroupRef}
-          className="relative z-20 flex flex-col items-center"
+          ref={actionGroupRef}
+          className="relative z-20 mt-7 flex flex-col items-center"
           style={{
-            touchAction: "none",
-            visibility: ropeVisible || phase !== "revealing" ? "visible" : "hidden",
+            visibility:
+              actionVisible || phase !== "revealing" ? "visible" : "hidden",
           }}
           aria-hidden={phase === "revealing"}
         >
-          <svg width="2" height={ropeLineLength} className="overflow-visible" aria-hidden>
-            <line
-              ref={ropeLineRef}
-              x1="1"
-              y1="0"
-              x2="1"
-              y2={ropeLineLength}
-              stroke="#8b1a1a"
-              strokeWidth="2"
-              strokeLinecap="round"
-              style={{ filter: "drop-shadow(0 0 2px rgba(180, 40, 40, 0.4))" }}
-            />
-          </svg>
-
-          <div className="relative flex flex-col items-center mt-1">
-            <div
-              ref={beadRef}
-              role="button"
-              tabIndex={phase === "interactive" ? 0 : -1}
-              aria-label="Kéo dây mở màn"
-              aria-disabled={phase !== "interactive"}
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              onPointerCancel={handlePointerCancel}
-              className="relative cursor-grab active:cursor-grabbing z-30"
-              style={{
-                transform: `translateY(${pullOffset}px)`,
-                touchAction: "none",
-              }}
+          <button
+            ref={buttonRef}
+            type="button"
+            disabled={phase !== "interactive"}
+            onClick={handleActionClick}
+            className="group flex h-[72px] w-[72px] items-center justify-center rounded-full border border-[#343434] bg-[radial-gradient(circle_at_35%_28%,#2b2b2b_0%,#111_44%,#050505_100%)] text-[#b8b8b8] shadow-[0_12px_28px_rgba(0,0,0,0.42),inset_0_1px_2px_rgba(255,255,255,0.08),inset_0_-8px_18px_rgba(0,0,0,0.55)] transition-[transform,box-shadow,border-color,color] duration-200 ease-out hover:-translate-y-0.5 hover:border-[#b8944d]/70 hover:text-[#f3dfad] hover:shadow-[0_15px_32px_rgba(0,0,0,0.46),0_0_16px_rgba(206,164,72,0.12),inset_0_1px_2px_rgba(255,255,255,0.1),inset_0_-8px_18px_rgba(0,0,0,0.55)] active:translate-y-0 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f6d77b]"
+            aria-label="Mở màn, chạm để bước vào sân khấu"
+          >
+            <svg
+              width="34"
+              height="34"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+              className="transition-transform duration-200 ease-out group-hover:scale-[1.03]"
             >
-              <div className="absolute left-1/2 -translate-x-1/2 -top-1 w-0.5 h-2" style={{ background: "#6b1010" }} aria-hidden />
-              <div
-                className="w-7 h-7 rounded-full"
-                style={{
-                  background: "radial-gradient(circle at 35% 30%, #f0c878, #c47a28 55%, #7a3f10 100%)",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.5), inset 0 -2px 4px rgba(0,0,0,0.3)",
-                }}
+              <path
+                d="M12 3.75V11"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
               />
-              <div
-                className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full"
-                style={{
-                  background: "radial-gradient(circle at 40% 35%, #fff8f0, #d4a88a 70%, #8b5a3c)",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
-                }}
-                aria-hidden
+              <path
+                d="M7.05 6.85A7 7 0 1 0 16.95 6.85"
+                stroke="currentColor"
+                strokeWidth="2.1"
+                strokeLinecap="round"
               />
-            </div>
-
-            <p
-              className="text-[10px] sm:text-xs tracking-wide whitespace-nowrap transition-opacity duration-700 mt-3 animate-pulse"
-              style={{
-                color: "rgba(220, 200, 180, 0.55)",
-                fontFamily: "var(--font-geist-sans, system-ui)",
-                opacity: phase === "interactive" && pullOffset < 15 ? 1 : 0,
-              }}
-            >
-              Kéo xuống để mở màn
-            </p>
-          </div>
+            </svg>
+          </button>
         </div>
-
       </div>
     </div>
   );

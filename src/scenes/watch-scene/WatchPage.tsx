@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
 import {
   getPlaybackBySlug,
   type PlaybackData,
@@ -44,6 +43,11 @@ export function WatchPage({ slug, mode }: WatchPageProps) {
   const [playedSeconds, setPlayedSeconds] = useState(0);
   const [complete, setComplete] = useState(false);
   const [previewEnded, setPreviewEnded] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const controlsVisibleRef = useRef(true);
+  const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   useEffect(() => {
     if (mode !== "full") {
@@ -78,7 +82,8 @@ export function WatchPage({ slug, mode }: WatchPageProps) {
   }, [mode, slug]);
 
   useEffect(() => {
-    void loadPlayback();
+    const loadTask = Promise.resolve().then(() => loadPlayback());
+    void loadTask;
   }, [loadPlayback]);
 
   const scenes = playback?.scenes ?? [];
@@ -86,11 +91,70 @@ export function WatchPage({ slug, mode }: WatchPageProps) {
   const isPreview = mode === "preview";
   const canGoPrevious = mode === "full" && currentIndex > 0;
   const canGoNext = mode === "full" && currentIndex < scenes.length - 1;
-  const progress = duration > 0 ? Math.min((currentTime / duration) * 100, 100) : 0;
+  const progress =
+    duration > 0 ? Math.min((currentTime / duration) * 100, 100) : 0;
 
   const modeLabel = useMemo(() => {
     return isPreview ? "Preview" : "Full experience";
   }, [isPreview]);
+
+  const setControlsVisibility = useCallback((visible: boolean) => {
+    if (controlsVisibleRef.current === visible) {
+      return;
+    }
+
+    controlsVisibleRef.current = visible;
+    setControlsVisible(visible);
+  }, []);
+
+  const clearControlsTimeout = useCallback(() => {
+    if (!controlsTimeoutRef.current) {
+      return;
+    }
+
+    clearTimeout(controlsTimeoutRef.current);
+    controlsTimeoutRef.current = null;
+  }, []);
+
+  const showControls = useCallback(() => {
+    setControlsVisibility(true);
+    clearControlsTimeout();
+
+    if (isPlaying && !complete) {
+      controlsTimeoutRef.current = setTimeout(() => {
+        setControlsVisibility(false);
+        controlsTimeoutRef.current = null;
+      }, 2500);
+    }
+  }, [clearControlsTimeout, complete, isPlaying, setControlsVisibility]);
+
+  const holdControlsVisible = useCallback(() => {
+    setControlsVisibility(true);
+    clearControlsTimeout();
+  }, [clearControlsTimeout, setControlsVisibility]);
+
+  useEffect(() => {
+    const visibilityTask = setTimeout(() => {
+      if (!isPlaying || complete) {
+        setControlsVisibility(true);
+        clearControlsTimeout();
+        return;
+      }
+
+      showControls();
+    }, 0);
+
+    return () => {
+      clearTimeout(visibilityTask);
+      clearControlsTimeout();
+    };
+  }, [
+    clearControlsTimeout,
+    complete,
+    isPlaying,
+    setControlsVisibility,
+    showControls,
+  ]);
 
   function resetAudioState(shouldPlay = false) {
     const video = videoRef.current;
@@ -191,37 +255,35 @@ export function WatchPage({ slug, mode }: WatchPageProps) {
   }, [currentIndex, currentScene, isPlaying, missingAudio]);
 
   return (
-    <div className="bg-black min-h-screen text-white flex flex-col selection:bg-white/20 font-body antialiased">
+    <div className="min-h-screen bg-black text-white selection:bg-white/20 font-body antialiased">
       <Navbar />
 
-      <main className="relative flex-1 overflow-hidden px-6 md:px-16 pt-32 pb-24">
-        <div className="pointer-events-none absolute inset-x-0 top-20 mx-auto h-72 max-w-3xl bg-white/[0.06] blur-3xl" />
-
-        <div className="relative max-w-7xl mx-auto">
+      <main className="relative px-3 pt-24 pb-10 sm:px-5 md:px-8 md:pt-28">
+        <div className="mx-auto w-full max-w-[1800px]">
           <Link
             href={`/library/${encodeURIComponent(slug)}`}
-            className="inline-flex items-center gap-3 text-xs text-white/45 hover:text-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-white/70 focus-visible:outline-offset-4 tracking-[0.2em] uppercase font-mono transition-colors mb-10"
+            className="mb-4 inline-flex items-center gap-3 text-[11px] font-mono uppercase tracking-[0.2em] text-white/45 transition-colors hover:text-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-white/70"
           >
             <span aria-hidden="true">←</span>
             Back to Detail
           </Link>
 
           {loading && (
-            <div className="py-32 text-center flex flex-col items-center justify-center gap-3">
-              <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-              <p className="text-xs text-white/40 font-mono tracking-widest uppercase">
+            <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 text-center">
+              <div className="h-5 w-5 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+              <p className="font-mono text-xs uppercase tracking-widest text-white/40">
                 Loading playback...
               </p>
             </div>
           )}
 
           {!loading && error && (
-            <div className="py-20 text-center border border-red-900/20 bg-red-950/5 p-8 max-w-xl mx-auto">
-              <p className="text-sm text-red-400 font-light mb-6">{error}</p>
+            <div className="mx-auto max-w-xl border border-red-900/30 bg-red-950/10 p-8 text-center">
+              <p className="mb-6 text-sm font-light text-red-300">{error}</p>
               <button
                 type="button"
                 onClick={loadPlayback}
-                className="border border-white/20 px-5 py-2 text-xs tracking-[0.2em] uppercase text-white/80 hover:border-white hover:text-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-white/70 focus-visible:outline-offset-4 transition-colors"
+                className="min-h-11 border border-white/20 px-5 py-2 text-xs uppercase tracking-[0.2em] text-white/80 transition-colors hover:border-white hover:text-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-white/70"
               >
                 Retry
               </button>
@@ -229,65 +291,28 @@ export function WatchPage({ slug, mode }: WatchPageProps) {
           )}
 
           {!loading && !error && (!playback || scenes.length === 0) && (
-            <div className="py-24 text-center border border-dashed border-white/10 my-6">
-              <p className="text-xs text-white/30 font-light tracking-wide font-mono">
+            <div className="my-6 border border-dashed border-white/10 py-24 text-center">
+              <p className="font-mono text-xs font-light tracking-wide text-white/30">
                 No playable dialogue found.
               </p>
             </div>
           )}
 
           {!loading && !error && playback && currentScene && (
-            <section className="grid grid-cols-1 lg:grid-cols-[minmax(0,7fr)_minmax(320px,3fr)] gap-6 lg:gap-8 items-start">
-              <div className="min-w-0 flex flex-col gap-3">
-                <div className="relative border border-white/10 bg-[#050505] px-6 py-4 md:px-7 md:py-5">
-                  <span className="absolute right-6 top-5 text-[10px] uppercase tracking-[0.2em] text-white/30 font-mono md:right-7">
-                    {currentIndex + 1}/{scenes.length}
-                  </span>
-
-                  <p className="mb-3 pr-16 text-[10px] uppercase tracking-[0.34em] text-white/45 font-mono">
-                    {modeLabel}
-                  </p>
-
-                  <h1 className="pr-16 font-heading text-3xl md:text-4xl font-semibold tracking-tight leading-none text-white">
-                    {playback.workTitle}
-                  </h1>
-
-                  <div className="mt-3 flex flex-col gap-1 md:flex-row md:items-center md:gap-4">
-                    <p className="text-sm md:text-base uppercase tracking-[0.1em] text-white/70">
-                      {playback.sceneTitle}
-                    </p>
-                    {playback.background && (
-                      <>
-                        <span className="hidden text-white/20 md:inline">—</span>
-                        <p className="text-xs font-light leading-relaxed text-white/40 line-clamp-2 md:block md:truncate md:text-sm">
-                          {playback.background}
-                        </p>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <div className="relative aspect-video w-full overflow-hidden border border-white/10 bg-black">
-                  {currentScene.videoUrl ? (
-                    <video
-                      ref={videoRef}
-                      src={currentScene.videoUrl}
-                      muted
-                      playsInline
-                      loop
-                      className="h-full w-full object-contain"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-b from-white/[0.08] to-transparent px-6 text-center">
-                      <p className="text-xs uppercase tracking-[0.2em] text-white/35 font-mono">
-                        Hình ảnh phân cảnh đang được hoàn thiện
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="min-w-[320px] max-h-[calc(100vh-10rem)] overflow-y-auto border border-white/10 bg-white/[0.03] p-6">
+            <section className="w-full">
+              <div
+                className="relative aspect-video max-h-[calc(100vh-15rem)] min-h-[220px] w-full overflow-hidden bg-black shadow-[0_24px_80px_rgba(0,0,0,0.55)] sm:min-h-[340px] lg:min-h-[min(64vh,760px)]"
+                onPointerMove={showControls}
+                onPointerDown={showControls}
+                onMouseEnter={showControls}
+                onFocusCapture={holdControlsVisible}
+                onBlurCapture={() => {
+                  if (isPlaying && !complete) {
+                    showControls();
+                  }
+                }}
+                tabIndex={0}
+              >
                 <audio
                   ref={audioRef}
                   src={currentScene.audioUrl}
@@ -297,101 +322,226 @@ export function WatchPage({ slug, mode }: WatchPageProps) {
                   onError={handleAudioError}
                 />
 
-                <div className="mb-8">
-                  <p className="text-[10px] uppercase tracking-[0.24em] text-white/35 font-mono mb-3">
-                    Now speaking
-                  </p>
-                  <h2 className="text-3xl md:text-4xl font-semibold text-white mb-2">
-                    {currentScene.character}
-                  </h2>
-                  <p className="text-sm uppercase tracking-[0.18em] text-white/45">
-                    {currentScene.emotion}
-                  </p>
-                  {currentScene.action && (
-                    <p className="mt-4 text-sm text-white/50 italic">
-                      {currentScene.action}
+                {currentScene.videoUrl ? (
+                  <video
+                    ref={videoRef}
+                    src={currentScene.videoUrl}
+                    muted
+                    playsInline
+                    loop
+                    className="absolute inset-0 h-full w-full bg-black object-contain"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-white/[0.08] to-transparent px-6 text-center">
+                    <p className="font-mono text-xs uppercase tracking-[0.2em] text-white/35">
+                      Hình ảnh phân cảnh đang được hoàn thiện
                     </p>
-                  )}
+                  </div>
+                )}
+
+                <div
+                  className={`pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-black/75 via-black/30 to-transparent px-3 pb-10 pt-3 transition-[opacity,transform] duration-300 ease-out sm:px-5 sm:pt-5 ${
+                    controlsVisible
+                      ? "translate-y-0 opacity-100"
+                      : "pointer-events-none -translate-y-2 opacity-0"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-white/60 sm:text-[10px]">
+                        {modeLabel}
+                      </p>
+                      <h1 className="mt-1 truncate font-heading text-base font-semibold uppercase tracking-[0.12em] text-white sm:text-xl md:text-2xl">
+                        {playback.workTitle} · {playback.sceneTitle}
+                      </h1>
+                    </div>
+                    <p className="shrink-0 font-mono text-[10px] tracking-[0.2em] text-white/70 sm:text-xs">
+                      {String(currentIndex + 1).padStart(2, "0")} /{" "}
+                      {String(scenes.length).padStart(2, "0")}
+                    </p>
+                  </div>
                 </div>
 
-                <p className="min-h-28 whitespace-pre-line text-lg lg:text-xl leading-relaxed text-white/85 font-light">
-                  {currentScene.dialogue}
-                </p>
-
                 {missingAudio && (
-                  <div className="mt-6 border border-red-900/30 bg-red-950/10 px-4 py-3 text-sm text-red-300">
+                  <div className="absolute left-3 top-3 max-w-[calc(100%-1.5rem)] border border-red-400/25 bg-red-950/55 px-3 py-2 text-xs text-red-100 backdrop-blur-sm sm:left-5 sm:top-5 sm:max-w-md">
                     Missing audio file: {missingAudio}
                   </div>
                 )}
 
                 {complete && (
-                  <div className="mt-6 border border-white/15 bg-white/[0.04] px-4 py-3 text-sm text-white/75">
-                    Hoàn thành phân cảnh
-                    {previewEnded && (
-                      <div className="mt-4">
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/25 px-4 backdrop-blur-[2px]">
+                    <div className="max-w-md border border-white/15 bg-black/65 px-5 py-4 text-center shadow-2xl sm:px-7 sm:py-6">
+                      <p className="text-sm font-light text-white/85 sm:text-base">
+                        Hoàn thành phân cảnh
+                      </p>
+                      {previewEnded && (
                         <Link
                           href={`/plans?story=${encodeURIComponent(slug)}`}
-                          className="inline-flex border border-white bg-white text-black px-5 py-2.5 text-xs tracking-[0.18em] uppercase font-medium hover:bg-white/90 focus-visible:outline focus-visible:outline-1 focus-visible:outline-white/70 focus-visible:outline-offset-4 transition-colors"
+                          className="mt-4 inline-flex min-h-11 items-center justify-center border border-white bg-white px-5 py-2.5 text-xs font-medium uppercase tracking-[0.18em] text-black transition-colors hover:bg-white/90 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-white/70"
                         >
                           Chọn gói để xem đầy đủ
                         </Link>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 )}
 
-                <div className="mt-8">
-                  <div className="h-1 bg-white/10 mb-3">
+                <div
+                  className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-3 pb-3 pt-16 transition-[opacity,transform] duration-300 ease-out sm:px-5 sm:pb-5 sm:pt-20 ${
+                    controlsVisible
+                      ? "translate-y-0 opacity-100"
+                      : "pointer-events-none translate-y-2 opacity-0"
+                  }`}
+                >
+                  <div className="mb-2 h-[3px] bg-white/20">
                     <div
-                      className="h-full bg-white transition-[width]"
+                      className="h-full bg-[#f3dfad] transition-[width]"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
-                  <div className="flex items-center justify-between text-xs text-white/45 font-mono">
-                    <span>{formatTime(currentTime)}</span>
-                    <span>{formatTime(duration)}</span>
+
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <span className="w-12 font-mono text-[11px] text-white/65 sm:w-16 sm:text-xs">
+                      {formatTime(currentTime)}
+                    </span>
+                    <span className="w-12 text-right font-mono text-[11px] text-white/65 sm:w-16 sm:text-xs">
+                      {formatTime(duration)}
+                    </span>
+                  </div>
+
+                  <div className="flex min-w-0 items-center justify-center gap-2 sm:gap-3">
+                    {mode === "full" && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          showControls();
+                          goToIndex(currentIndex - 1);
+                        }}
+                        onFocus={holdControlsVisible}
+                        onBlur={() => {
+                          if (isPlaying && !complete) {
+                            showControls();
+                          }
+                        }}
+                        disabled={!canGoPrevious}
+                        aria-label="Previous scene"
+                        className="flex h-11 w-11 items-center justify-center rounded-full text-white/70 transition-colors hover:text-white disabled:opacity-30 disabled:hover:text-white/70 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-white/70"
+                      >
+                        <svg
+                          width="22"
+                          height="22"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M6 5v14M18 6.5 9.5 12 18 17.5V6.5Z"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        showControls();
+                        void togglePlayback();
+                      }}
+                      onFocus={holdControlsVisible}
+                      onBlur={() => {
+                        if (isPlaying && !complete) {
+                          showControls();
+                        }
+                      }}
+                      disabled={!currentScene || Boolean(missingAudio)}
+                      aria-label={isPlaying ? "Pause playback" : "Play playback"}
+                      className="flex h-12 w-12 items-center justify-center rounded-full bg-white/12 text-white transition-colors hover:bg-white/20 hover:text-white disabled:opacity-35 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-white/70"
+                    >
+                      {isPlaying ? (
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M9 6v12M15 6v12"
+                            stroke="currentColor"
+                            strokeWidth="2.4"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      ) : (
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M9 6.75v10.5L17 12 9 6.75Z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                      )}
+                    </button>
+
+                    {mode === "full" && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          showControls();
+                          goToIndex(currentIndex + 1);
+                        }}
+                        onFocus={holdControlsVisible}
+                        onBlur={() => {
+                          if (isPlaying && !complete) {
+                            showControls();
+                          }
+                        }}
+                        disabled={!canGoNext}
+                        aria-label="Next scene"
+                        className="flex h-11 w-11 items-center justify-center rounded-full text-white/70 transition-colors hover:text-white disabled:opacity-30 disabled:hover:text-white/70 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-white/70"
+                      >
+                        <svg
+                          width="22"
+                          height="22"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M18 5v14M6 6.5 14.5 12 6 17.5V6.5Z"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 </div>
+              </div>
 
-                <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                  {mode === "full" && (
-                    <button
-                      type="button"
-                      onClick={() => goToIndex(currentIndex - 1)}
-                      disabled={!canGoPrevious}
-                      className="border border-white/20 px-5 py-3 text-xs tracking-[0.18em] uppercase text-white/80 hover:border-white disabled:opacity-30 disabled:hover:border-white/20 focus-visible:outline focus-visible:outline-1 focus-visible:outline-white/70 focus-visible:outline-offset-4 transition-colors"
-                    >
-                      Previous
-                    </button>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={togglePlayback}
-                    disabled={!currentScene || Boolean(missingAudio)}
-                    className="border border-white bg-white text-black px-6 py-3 text-xs tracking-[0.18em] uppercase font-medium hover:bg-white/90 disabled:opacity-40 focus-visible:outline focus-visible:outline-1 focus-visible:outline-white/70 focus-visible:outline-offset-4 transition-colors"
-                  >
-                    {isPlaying ? "Pause" : "Play"}
-                  </button>
-
-                  {mode === "full" && (
-                    <button
-                      type="button"
-                      onClick={() => goToIndex(currentIndex + 1)}
-                      disabled={!canGoNext}
-                      className="border border-white/20 px-5 py-3 text-xs tracking-[0.18em] uppercase text-white/80 hover:border-white disabled:opacity-30 disabled:hover:border-white/20 focus-visible:outline focus-visible:outline-1 focus-visible:outline-white/70 focus-visible:outline-offset-4 transition-colors"
-                    >
-                      Next
-                    </button>
-                  )}
-                </div>
+              <div className="border-y border-white/[0.06] bg-[#050505] px-4 py-5 text-center sm:px-6 md:min-h-[150px] md:py-7">
+                <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.26em] text-[#f3dfad]/75 sm:text-xs">
+                  {currentScene.character}
+                </p>
+                <p className="mx-auto max-w-[1100px] whitespace-pre-line text-base font-light leading-[1.6] text-[#f5f0e6] sm:text-lg md:text-xl lg:text-2xl">
+                  {currentScene.dialogue}
+                </p>
               </div>
             </section>
           )}
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
